@@ -17,10 +17,13 @@ const handleListen = () => console.log(`Listening on http://localhost:${PORT}`);
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-const handleConnection = (socket) => {
-  console.log(socket);
-};
-
-wss.on("connection", handleConnection);
+wss.on("connection", (socket) => {
+  console.log("Connected to browser ✅");
+  socket.on("close", () => console.log("Disconnected from the browser ❌"));
+  socket.on("message", (message) => {
+    console.log(message.toString());
+  });
+  socket.send("welcom noom!");
+});
 
 server.listen(PORT, handleListen);
