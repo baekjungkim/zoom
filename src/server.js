@@ -20,13 +20,23 @@ const wss = new WebSocket.Server({ server });
 const sockets = [];
 
 wss.on("connection", (socket) => {
+  socket["nickname"] = "Anonymous";
   sockets.push(socket);
   console.log("Connected to browser ✅");
   socket.on("close", () => console.log("Disconnected from the browser ❌"));
   socket.on("message", (message) => {
-    sockets.forEach((aSocket) => aSocket.send(message.toString()));
+    const { type, payload } = JSON.parse(message);
+    switch (type) {
+      case "message":
+        sockets.forEach((aSocket) =>
+          aSocket.send(`${socket.nickname}: ${payload}`)
+        );
+        break;
+      case "nickname":
+        socket["nickname"] = payload;
+        break;
+    }
   });
-  socket.send("welcom noom!");
 });
 
 server.listen(PORT, handleListen);
