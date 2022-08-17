@@ -31,8 +31,25 @@ function handleRoomSubmit(event) {
   input.value = "";
 }
 
+function handleMessageSubmit(event) {
+  event.preventDefault();
+  const input = roomForm.querySelector("input");
+  const value = input.value;
+  socket.emit("send_message", value, roomName, () => {
+    addMessage(`You: ${value}`);
+  });
+  input.value = "";
+}
 enterForm.addEventListener("submit", handleRoomSubmit);
+
+roomForm.addEventListener("submit", handleMessageSubmit);
 
 socket.on("welcome", () => {
   addMessage("Someone Joined!");
 });
+
+socket.on("bye", () => {
+  addMessage("Someone left!");
+});
+
+socket.on("recieve_message", addMessage);
