@@ -83,3 +83,16 @@ socket.on("recieve_message", addMessage);
 socket.on("set_nickname", (before, after) => {
   addMessage(`${before} changed nickname to ${after}`);
 });
+
+socket.on("room_change", (rooms) => {
+  const roomList = enter.querySelector("ul");
+  roomList.innerHTML = "";
+  if (rooms.length === 0) {
+    return;
+  }
+  rooms.forEach((room) => {
+    const li = document.createElement("li");
+    li.innerText = room;
+    roomList.append(li);
+  });
+});

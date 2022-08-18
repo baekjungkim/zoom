@@ -17,10 +17,27 @@ const handleListen = () => console.log(`Listening on http://localhost:${PORT}`);
 const httpServer = http.createServer(app);
 const ioServer = SocketIO(httpServer);
 
+function getPublicRooms() {
+  const {
+    sockets: {
+      adapter: { sids, rooms },
+    },
+  } = ioServer;
+
+  const publicRooms = [];
+  rooms.forEach((_, key) => {
+    if (sids.get(key) === undefined) {
+      publicRooms.push(key);
+    }
+  });
+  return publicRooms;
+}
+
 ioServer.on("connection", (socket) => {
   socket["nickname"] = "Anonymous";
 
   socket.onAny((event) => {
+    // console.log(ioServer.sockets.adapter);
     console.log(`Socket Event: ${event}`);
   });
 
@@ -28,6 +45,7 @@ ioServer.on("connection", (socket) => {
     socket.join(roomName);
     done();
     socket.to(roomName).emit("welcome", socket.nickname);
+    ioServer.sockets.emit("room_change", getPublicRooms());
   });
 
   socket.on("send_message", (message, roomName, done) => {
@@ -50,6 +68,10 @@ ioServer.on("connection", (socket) => {
     socket.rooms.forEach((room) =>
       socket.to(room).emit("bye", socket.nickname)
     );
+  });
+
+  socket.on("disconnect", () => {
+    ioServer.sockets.emit("room_change", getPublicRooms());
   });
 });
 
