@@ -33,6 +33,10 @@ ioServer.on("connection", (socket) => {
     done();
     socket.to(roomName).emit("welcome");
   });
+
+  socket.on("send_offer", (offer, roomName) => {
+    socket.to(roomName).emit("recieve_offer", offer);
+  });
 });
 
 httpServer.listen(PORT, handleListen);
