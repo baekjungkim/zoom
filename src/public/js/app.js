@@ -22,11 +22,15 @@ function addMessage(message) {
   ul.appendChild(li);
 }
 
-function showRoom() {
+function makeTitle(userCount) {
+  const h3 = room.querySelector("h3");
+  h3.innerText = `Room ${roomName} (${userCount})`;
+}
+
+function showRoom(userCount) {
   enter.hidden = true;
   room.hidden = false;
-  const h3 = room.querySelector("h3");
-  h3.innerText = `Room ${roomName}`;
+  makeTitle(userCount);
 }
 
 function nicknameFormChange() {
@@ -70,11 +74,13 @@ nicknameForm.addEventListener("submit", handleNicknameSubmit);
 messageForm.addEventListener("submit", handleMessageSubmit);
 nicknameChangeButton.addEventListener("click", handleNicknameChange);
 
-socket.on("welcome", (nickname) => {
+socket.on("welcome", (nickname, userCount) => {
+  makeTitle(userCount);
   addMessage(`${nickname} Joined!`);
 });
 
-socket.on("bye", (nickname) => {
+socket.on("bye", (nickname, userCount) => {
+  makeTitle(userCount);
   addMessage(`${nickname} Left!`);
 });
 

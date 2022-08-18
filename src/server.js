@@ -1,6 +1,7 @@
 import http from "http";
-import SocketIO from "socket.io";
+import { Server } from "socket.io";
 import express from "express";
+const { instrument } = require("@socket.io/admin-ui");
 
 const app = express();
 
@@ -15,7 +16,16 @@ app.get("/*", (req, res) => res.redirect("/"));
 const handleListen = () => console.log(`Listening on http://localhost:${PORT}`);
 
 const httpServer = http.createServer(app);
-const ioServer = SocketIO(httpServer);
+const ioServer = new Server(httpServer, {
+  cors: {
+    origin: ["https://admin.socket.io"],
+    credentials: true,
+  },
+});
+
+instrument(ioServer, {
+  auth: false,
+});
 
 function getPublicRooms() {
   const {
@@ -33,18 +43,24 @@ function getPublicRooms() {
   return publicRooms;
 }
 
+function getRoomUserCount(roomName) {
+  return ioServer.sockets.adapter.rooms.get(roomName)?.size;
+}
+
 ioServer.on("connection", (socket) => {
   socket["nickname"] = "Anonymous";
 
   socket.onAny((event) => {
-    // console.log(ioServer.sockets.adapter);
+    console.log(ioServer.sockets.adapter);
     console.log(`Socket Event: ${event}`);
   });
 
   socket.on("enter_room", (roomName, done) => {
     socket.join(roomName);
-    done();
-    socket.to(roomName).emit("welcome", socket.nickname);
+    done(getRoomUserCount(roomName));
+    socket
+      .to(roomName)
+      .emit("welcome", socket.nickname, getRoomUserCount(roomName));
     ioServer.sockets.emit("room_change", getPublicRooms());
   });
 
@@ -66,7 +82,7 @@ ioServer.on("connection", (socket) => {
 
   socket.on("disconnecting", (reason) => {
     socket.rooms.forEach((room) =>
-      socket.to(room).emit("bye", socket.nickname)
+      socket.to(room).emit("bye", socket.nickname, getRoomUserCount(room) - 1)
     );
   });
 
