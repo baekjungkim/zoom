@@ -27,4 +27,12 @@ instrument(ioServer, {
   auth: false,
 });
 
+ioServer.on("connection", (socket) => {
+  socket.on("join_room", (roomName, done) => {
+    socket.join(roomName);
+    done();
+    socket.to(roomName).emit("welcome");
+  });
+});
+
 httpServer.listen(PORT, handleListen);
