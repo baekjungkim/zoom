@@ -168,7 +168,26 @@ function handleAddStream(data) {
 }
 
 function makeConnection() {
-  myPeerConnection = new RTCPeerConnection();
+  myPeerConnection = new RTCPeerConnection({
+    iceServers: [
+      {
+        urls: ["stun:ntk-turn-2.xirsys.com"],
+      },
+      {
+        username:
+          "zLo9rRz0Yi35_dfnESboa4YfrSa5HoH_-6d_U7J0J-xEs5PPitXGihPvxRwaO51CAAAAAGL-7TB6dmdhbmRhbQ==",
+        credential: "c683faf0-1f61-11ed-ab0d-0242ac120004",
+        urls: [
+          "turn:ntk-turn-2.xirsys.com:80?transport=udp",
+          "turn:ntk-turn-2.xirsys.com:3478?transport=udp",
+          "turn:ntk-turn-2.xirsys.com:80?transport=tcp",
+          "turn:ntk-turn-2.xirsys.com:3478?transport=tcp",
+          "turns:ntk-turn-2.xirsys.com:443?transport=tcp",
+          "turns:ntk-turn-2.xirsys.com:5349?transport=tcp",
+        ],
+      },
+    ],
+  });
   myPeerConnection.addEventListener("icecandidate", handleIceCandidate);
   myPeerConnection.addEventListener("addstream", handleAddStream);
   myStream
