@@ -83,12 +83,20 @@ function handleCameraClick() {
   cameraOff = !cameraOff;
 }
 
-function handleCameraChange() {
-  getMedia(camerasSelect.value);
+async function handleCameraChange() {
+  await getMedia(camerasSelect.value);
   cameraOff = false;
   cameraBtn.innerText = "Camera Off";
   muted = false;
   muteBtn.innerText = "Mute";
+
+  if (myPeerConnection) {
+    const videoTrack = myStream.getVideoTracks()[0];
+    const videoSender = myPeerConnection
+      .getSenders()
+      .find((sender) => sender.track.kind === "video");
+    videoSender.replaceTrack(videoTrack);
+  }
 }
 
 muteBtn.addEventListener("click", handleMuteClick);
