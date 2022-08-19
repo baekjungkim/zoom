@@ -34,11 +34,15 @@ ioServer.on("connection", (socket) => {
   });
 
   socket.on("send_offer", (offer, roomName) => {
-    socket.to(roomName).emit("recieve_offer", offer);
+    socket.to(roomName).emit("receive_offer", offer);
   });
 
   socket.on("send_answer", (answer, roomName) => {
-    socket.to(roomName).emit("recieve_answer", answer);
+    socket.to(roomName).emit("receive_answer", answer);
+  });
+
+  socket.on("send_icecandidate", (icecandidate, roomName) => {
+    socket.to(roomName).emit("recieve_icecandidate", icecandidate);
   });
 });
 

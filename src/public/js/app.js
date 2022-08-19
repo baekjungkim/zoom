@@ -123,25 +123,46 @@ welcomeForm.addEventListener("submit", handleWelcomeSubmit);
 socket.on("welcome", async () => {
   const offer = await myPeerConnection.createOffer();
   myPeerConnection.setLocalDescription(offer);
+  console.log("sent the offer");
   socket.emit("send_offer", offer, roomName);
 });
 
-socket.on("recieve_answer", (answer) => {
+socket.on("receive_answer", (answer) => {
+  console.log("receive the answer");
   myPeerConnection.setRemoteDescription(answer);
 });
 
 // joinner
-socket.on("recieve_offer", async (offer) => {
+socket.on("receive_offer", async (offer) => {
+  console.log("receive the offer");
   myPeerConnection.setRemoteDescription(offer);
   const answer = await myPeerConnection.createAnswer();
   myPeerConnection.setLocalDescription(answer);
+  console.log("sent the answer");
   socket.emit("send_answer", answer, roomName);
+});
+
+socket.on("recieve_icecandidate", (icecandidate) => {
+  console.log("receive candidate");
+  myPeerConnection.addIceCandidate(icecandidate);
 });
 
 // RTC Code
 
+function handleIceCandidate(data) {
+  console.log("sent candidate");
+  socket.emit("send_icecandidate", data.candidate, roomName);
+}
+
+function handleAddStream(data) {
+  const peerStream = document.getElementById("peersStream");
+  peerStream.srcObject = data.stream;
+}
+
 function makeConnection() {
   myPeerConnection = new RTCPeerConnection();
+  myPeerConnection.addEventListener("icecandidate", handleIceCandidate);
+  myPeerConnection.addEventListener("addstream", handleAddStream);
   myStream
     .getTracks()
     .forEach((track) => myPeerConnection.addTrack(track, myStream));
